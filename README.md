@@ -17,3 +17,12 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
+
+## Run with Docker
+
+```shell
+docker build -t 5gla-react-visualization .
+docker run --name 5gla-react-visualization -p 3000:3000  5gla-react-visualization
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser. 
