@@ -21,7 +21,7 @@ Your app is ready to be deployed!
 ### `npm run start`
 
 Runs the app in the production mode.\
-Open [http://localhost:3000](http://localhost:3000) to viet it in the browser.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ## Run with Docker
 
