@@ -26,7 +26,7 @@ Open [http://localhost:3000](http://localhost:3000) to viet it in the browser.
 ## Run with Docker
 
 ```shell
-docker build -t 5gla-react-visualization .
+docker build -f ./.github/dockerfile -t 5gla-react-visualization .
 docker run --name 5gla-react-visualization -p 3000:3000  5gla-react-visualization
 ```
 
