@@ -1,0 +1,12 @@
+body {
+    counter-reset: disclaimer;
+}
+
+.firstCounter::before {
+    counter-increment: disclaimer;
+    content: counter(disclaimer) ". ";
+}
+.counter::before {
+    counter-increment: disclaimer;
+    content: counter(disclaimer) ". ";
+}

@@ -6,13 +6,16 @@ import {
     Outlet,
     Scripts,
     ScrollRestoration, useRouteError
-} from "react-router";
+} from 'react-router';
 
 import stylesheet from './app.css?url';
-import React from "react";
+import React from 'react';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import styles from './root.module.css';
 
 export const links: LinksFunction = () => [
-    {rel: "stylesheet", href: stylesheet},
+    { rel: 'stylesheet', href: stylesheet },
 ]
 
 export function Layout({children}: { children: React.ReactNode }) {
@@ -26,7 +29,11 @@ export function Layout({children}: { children: React.ReactNode }) {
             <Links/>
         </head>
         <body>
-        {children}
+        <div className={styles.container}>
+            <Header/>
+            <div className={styles.content}>{children}</div>
+            <Footer/>
+        </div>
         <ScrollRestoration/>
         <Scripts/>
         </body>
