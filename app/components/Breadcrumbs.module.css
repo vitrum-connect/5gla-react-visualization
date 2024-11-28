@@ -1,7 +1,7 @@
 .breadcrumbs {
     background-color: #41485A;
     display: flex;
-    padding: 10px 40px;
+    padding: 10px min(4vh, 2vw);
     a {
         color: white;
         font-size: large;

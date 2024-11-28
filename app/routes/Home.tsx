@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Home.module.css';
+import OpenLayers from '../components/OpenLayers';
 
 function Home() {
   return (
@@ -8,7 +9,7 @@ function Home() {
           <p>Placeholder for filters</p>
         </div>
         <div className={styles.map}>
-          <p>Placeholder for map</p>
+          <OpenLayers id="geo_server" />
         </div>
       </div>
   );
