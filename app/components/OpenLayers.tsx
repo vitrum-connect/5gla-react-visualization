@@ -4,11 +4,12 @@ import { Point } from "ol/geom";
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from "ol/layer/Vector";
 import { OSM } from 'ol/source';
-import VectorSource from "ol/source/Vector";
+import VectorSource from 'ol/source/Vector';
 import { Feature, Map, View } from 'ol';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
+import {getAgvolutionSensorsLocations} from '../services/fiwareService';
 
 interface Props {
     id: string
@@ -49,6 +50,14 @@ function OpenLayers({ id }: Props) {
                 zoom: 0,
             }),
         });
+
+        getAgvolutionSensorsLocations()
+            .then((response) => {
+                console.debug(response.data);
+            })
+            .catch((error) => {
+                console.debug(error);
+            });
 
         const extent = vectorSource.getExtent();
         if (extent) {
