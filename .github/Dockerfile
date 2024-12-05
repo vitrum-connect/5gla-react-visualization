@@ -1,9 +1,6 @@
 # pull official base image
 FROM node:23.3.0-alpine
 
-# install web server
-RUN npm install -g serve
-
 # add file to app folder
 ADD . /app/
 
@@ -17,4 +14,4 @@ RUN npm install && npm run build
 EXPOSE 3000
 
 # define entrypoint
-CMD ["serve", "-s", "/app/build"]
+CMD ["npm", "run", "start"]
