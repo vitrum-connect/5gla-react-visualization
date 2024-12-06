@@ -1,0 +1,16 @@
+.container {
+    display: flex;
+    @media only screen and (max-width: 767px) {
+        flex-wrap: wrap;
+    }
+    height: 100%;
+    .filter, .map {
+        width: 50%;
+        @media only screen and (max-width: 767px) {
+            width: 100%;
+        }
+    }
+    .filter {
+        padding-right: 10px;
+    }
+}

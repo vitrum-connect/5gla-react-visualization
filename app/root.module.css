@@ -5,7 +5,7 @@
 }
 
 .content {
-    padding: 40px;
+    padding: min(4vh, 2vw);
     flex-grow: 1;
     overflow-y: auto;
 }

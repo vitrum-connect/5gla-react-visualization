@@ -10,8 +10,9 @@ import {
 
 import stylesheet from './app.css?url';
 import React from 'react';
-import Header from './components/Header';
+import Breadcrumbs from './components/Breadcrumbs';
 import Footer from './components/Footer';
+import Header from './components/Header';
 import styles from './root.module.css';
 
 export const links: LinksFunction = () => [
@@ -31,6 +32,7 @@ export function Layout({children}: { children: React.ReactNode }) {
         <body>
         <div className={styles.container}>
             <Header/>
+            <Breadcrumbs/>
             <div className={styles.content}>{children}</div>
             <Footer/>
         </div>

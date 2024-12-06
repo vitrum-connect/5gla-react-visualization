@@ -1,0 +1,18 @@
+.breadcrumbs {
+    background-color: #41485A;
+    display: flex;
+    padding: 10px min(4vh, 2vw);
+    a {
+        color: white;
+        font-size: large;
+        text-decoration: none;
+        & + &:before {
+            content: '>';
+            font-weight: normal;
+            margin: 0 15px;
+        }
+        &.active {
+            font-weight: bold;
+        }
+    }
+}

@@ -4,7 +4,7 @@
     justify-content: center;
     gap: 40px;
     list-style: none;
-    padding: 20px 40px;
+    padding: 20px min(4vh, 2vw);
     a {
         color: white;
         font-size: x-large;
