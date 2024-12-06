@@ -1,15 +1,13 @@
 import axios, {AxiosInstance} from 'axios';
 
-const baseUrlFiwareServer: string = 'http://46.253.253.122:30003';
+// const baseUrlFiwareServer: string = 'http://46.253.253.122:30003';
+const baseUrlFiwareServer: string = 'http://localhost:5173';
 const entitiesApiUrlFiwareServer: string = baseUrlFiwareServer + '/v2/entities/';
 
 function getRequestInstanceFromFiwareServer(): AxiosInstance {
     return axios.create({
         baseURL: entitiesApiUrlFiwareServer,
-        headers: {
-            'fiware-server': 'dev',
-            'Accept': '*/*'
-        },
+        headers: { 'fiware-service': 'dev' }
     });
 }
 

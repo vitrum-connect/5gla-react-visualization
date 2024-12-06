@@ -8,5 +8,10 @@ export default defineConfig({
             plugins: [autoprefixer]
         }
     },
-    plugins: [reactRouter()]
+    plugins: [reactRouter()],
+    server: {
+        proxy: {
+            '/v2/entities': 'http://46.253.253.122:30003'
+        }
+    }
 });
