@@ -22,3 +22,11 @@ export function getAgvolutionSensorsLocations() {
         options: 'keyValues'
     });
 }
+
+export function getSentekSensorsLocations() {
+    return getRequestFromFiwareServer({
+        type: 'SentekSensor',
+        attrs: 'location',
+        options: 'keyValues'
+    });
+}
