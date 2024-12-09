@@ -30,3 +30,11 @@ export function getSentekSensorsLocations() {
         options: 'keyValues'
     });
 }
+
+export function getAgriCropPolygon() {
+    return getRequestFromFiwareServer({
+        type: 'AgriCrop',
+        attrs: 'location',
+        options: 'keyValues'
+    });
+}
