@@ -1,6 +1,6 @@
 import axios, {AxiosInstance} from 'axios';
 
-const baseUrlFiwareServer: string = 'http://localhost:5173';
+const baseUrlFiwareServer: string = process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : import.meta.env.VITE_FIWARE_SERVER_BASE_URL;
 const entitiesApiUrlFiwareServer: string = baseUrlFiwareServer + '/v2/entities/';
 
 function getRequestInstanceFromFiwareServer(): AxiosInstance {

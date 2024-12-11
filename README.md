@@ -1,5 +1,11 @@
 # Getting Started with 5GLa Visualization
 
+## Create .env
+
+Rename/copy `.env.example` to `.env` and change the `.env` with your configuration. 
+
+## Scripts
+
 In the project directory, you can run:
 
 ### `npm run dev`
@@ -26,8 +32,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Run with Docker
 
 ```shell
-docker build -f ./.github/Dockerfile -t 5gla-react-visualization .
-docker run --name 5gla-react-visualization -p 3000:3000  5gla-react-visualization
+docker build --build-arg VITE_FIWARE_SERVER_BASE_URL=<url of Fiware server> -f ./.github/Dockerfile -t 5gla-react-visualization .
+docker run --name 5gla-react-visualization -p 3000:3000 5gla-react-visualization
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser. 
