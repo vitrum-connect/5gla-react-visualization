@@ -6,13 +6,13 @@
         color: white;
         font-size: large;
         text-decoration: none;
-        & + &:before {
-            content: '>';
-            font-weight: normal;
-            margin: 0 15px;
-        }
-        &.active {
-            font-weight: bold;
-        }
+    }
+    a + a:before {
+        content: '>';
+        font-weight: normal;
+        margin: 0 15px;
+    }
+    a.active {
+        font-weight: bold;
     }
 }

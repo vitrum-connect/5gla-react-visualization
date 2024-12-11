@@ -12,7 +12,9 @@ function Breadcrumbs() {
         <nav aria-label="breadcrumb" className={styles.breadcrumbs}>
             <NavLink
                 to="/"
-                className={({ isActive }) => (isActive ? styles.active : undefined)}>
+                className={({ isActive }) => (isActive ? styles.active : undefined)}
+                key="home"
+            >
                 Startseite
             </NavLink>
             {pathnames.map((pathname, index) => {
@@ -20,7 +22,9 @@ function Breadcrumbs() {
                 const label: string = routeLabels[pathname] || pathname;
                 return <NavLink
                     to={to}
-                    className={({ isActive }) => (isActive ? styles.active : undefined)}>
+                    className={({ isActive }) => (isActive ? styles.active : undefined)}
+                    key={pathname}
+                >
                     {decodeURIComponent(label)}
                 </NavLink>;
             })}
