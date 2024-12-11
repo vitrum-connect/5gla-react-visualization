@@ -1,15 +1,15 @@
 import React, {useEffect} from 'react';
 
 import {Feature, Map, View} from 'ol';
-import {Coordinate} from "ol/coordinate";
+import {Coordinate} from 'ol/coordinate';
 import {Extent} from "ol/extent";
-import {Point, Polygon} from "ol/geom";
+import {Point, Polygon} from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from "ol/layer/Vector";
-import {fromLonLat} from "ol/proj";
+import {fromLonLat} from 'ol/proj';
 import {OSM} from 'ol/source';
 import VectorSource from 'ol/source/Vector';
-import {Fill, Stroke, Style} from "ol/style";
+import {Fill, Stroke, Style} from 'ol/style';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
@@ -37,15 +37,15 @@ interface Sensor {
 interface AgriCropResponse {
     id: string,
     type: string,
-    polygon: {
+    location: {
         type: string,
-        polygon: Coordinate[]
+        coordinates: Coordinate[]
     }
 }
 
 interface AgriCrop {
     id: string,
-    polygon: Coordinate[]
+    coordinates: Coordinate[]
 }
 
 function removeSensorByIdAndType(sensors: Sensor[], id: string, type: string) {
@@ -70,14 +70,13 @@ function updateSensors(map: Map, vectorSource: VectorSource<Feature<Point>>, sen
     });
     vectorSource.clear();
     vectorSource.addFeatures(features);
-    fitMap(map, vectorSource.getExtent());
 }
 
 function updateAgriCrops(map: Map, vectorSource: VectorSource<Feature<Polygon>>, agriCrops: AgriCrop[]) {
     const features: Feature<Polygon>[] = [];
     agriCrops.map((agriCrop: AgriCrop) => {
         const lonLatCoordinates: Coordinate[] = [];
-        agriCrop.polygon.map((coordinate) => {
+        agriCrop.coordinates.map((coordinate) => {
             lonLatCoordinates.push(fromLonLat(coordinate));
         })
         const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
@@ -117,7 +116,7 @@ function handleAgriCropResponse(_agriCrops: AgriCropResponse[], map: Map, vector
             removeAgriCropById(agriCrops, _agriCrop.id)
             agriCrops.push({
                 id: _agriCrop.id,
-                polygon: _agriCrop.polygon.polygon
+                coordinates: _agriCrop.location.coordinates
             });
         });
         updateAgriCrops(map, vectorSource, agriCrops);
