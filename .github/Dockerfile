@@ -8,9 +8,11 @@ ADD . /app/
 WORKDIR /app
 
 # install app
-ARG VITE_FIWARE_SERVER_BASE_URL=localhost
-ENV VITE_FIWARE_SERVER_BASE_URL=$VITE_FIWARE_SERVER_BASE_URL
-RUN npm install && npm run build
+RUN --mount=type=secret,id=VITE_FIWARE_SERVER_BASE_URL \
+    --mount=type=secret,id=VITE_TENANT_API_SERVER_BASE_URL \
+    --mount=type=secret,id=VITE_TENANT_API_USERNAME \
+    --mount=type=secret,id=VITE_TENANT_API_PASSWORD \
+    npm install && npm run build
 
 # expose web port
 EXPOSE 3000

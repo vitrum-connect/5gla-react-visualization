@@ -32,7 +32,12 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Run with Docker
 
 ```shell
-docker build --build-arg VITE_FIWARE_SERVER_BASE_URL=<url of Fiware server> -f ./.github/Dockerfile -t 5gla-react-visualization .
+docker build --secret type=env,id=VITE_FIWARE_SERVER_BASE_URL,env=<url of Fiware server> \
+             --secret type=env,id=VITE_TENANT_API_SERVER_BASE_URL,env=<url of tenant API server> \
+             --secret type=env,id=VITE_TENANT_API_USERNAME,env=<username for tenant API server> \
+             --secret type=env,id=VITE_TENANT_API_PASSWORD,env=<password for tenant API server> \
+             -f ./.github/Dockerfile \
+             -t 5gla-react-visualization .
 docker run --name 5gla-react-visualization -p 3000:3000 5gla-react-visualization
 ```
 
