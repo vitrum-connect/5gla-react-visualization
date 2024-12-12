@@ -1,28 +1,48 @@
 import styles from './SingleSelectionGroups.module.css';
+
+import React, {useEffect, useState} from 'react';
 import {Button, Form} from 'react-bootstrap';
 
-interface RadioButtons {
-    groupId: string,
+import {getTenantGroups} from '../services/tenantApiService';
+
+interface TenantGroup {
     name: string,
-    description: string
+    description: string,
+    groupId: string,
+    sensorIdsAssignedToGroup: string[]
+}
+
+interface TenantGroupsResponse {
+    timestamp: string,
+    groups: TenantGroup[]
 }
 
 function SingleSelectionGroups() {
 
-    const radioButtons: RadioButtons[] = [
-        { groupId: "feld_1", name: "feld_1", description: "Feld 1 - Hofscheune" },
-        { groupId: "feld_2", name: "feld_2", description: "Feld 2 - Musterschlag" }
-    ];
+    const initialRadioButtonsTemplate: React.JSX.Element[] = [];
+    const [radioButtonsTemplate, setRadioButtonsTemplate] = useState(initialRadioButtonsTemplate);
 
-    const radioButtonsTemplate = radioButtons.map((radioButton) => {
-        return <Form.Check
-            className={styles.groups}
-            type="radio"
-            id={radioButton.groupId}
-            key={radioButton.groupId}
-            label={radioButton.description}
-            name="groups"
-        />;
+    useEffect(() => {
+        getTenantGroups()
+            .then((response) => {
+                const data: TenantGroupsResponse = response.data;
+                const groups: TenantGroup[] = data.groups;
+                setRadioButtonsTemplate(() => {
+                    return groups.map((group: TenantGroup): React.JSX.Element => {
+                        return <Form.Check
+                            className={styles.groups}
+                            type="radio"
+                            id={group.groupId}
+                            key={group.groupId}
+                            label={group.description}
+                            name="groups"
+                        />;
+                    });
+                });
+            })
+            .catch((error) => {
+                console.debug(error);
+            });
     });
 
     return (
