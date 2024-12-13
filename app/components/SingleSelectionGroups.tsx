@@ -34,7 +34,7 @@ function SingleSelectionGroups() {
                             type="radio"
                             id={group.groupId}
                             key={group.groupId}
-                            label={group.description}
+                            label={group.name}
                             name="groups"
                         />;
                     });
