@@ -1,6 +1,6 @@
 import styles from './SingleSelectionGroups.module.css';
 
-import React, {useEffect, useState} from 'react';
+import React, {ChangeEvent, useEffect, useState} from 'react';
 import {Button, Form} from 'react-bootstrap';
 
 import {getTenantGroups} from '../services/tenantApiService';
@@ -19,38 +19,44 @@ interface TenantGroupsResponse {
 
 function SingleSelectionGroups() {
 
-    const initialRadioButtonsTemplate: React.JSX.Element[] = [];
-    const [radioButtonsTemplate, setRadioButtonsTemplate] = useState(initialRadioButtonsTemplate);
+    const [groups, setGroups] = useState<TenantGroup[]>([]);
+    const [selectedGroup, setSelectedGroup] = useState('');
 
     useEffect(() => {
         getTenantGroups()
             .then((response) => {
                 const data: TenantGroupsResponse = response.data;
-                const groups: TenantGroup[] = data.groups;
-                setRadioButtonsTemplate(() => {
-                    return groups.map((group: TenantGroup): React.JSX.Element => {
-                        return <Form.Check
-                            className={styles.groups}
-                            type="radio"
-                            id={group.groupId}
-                            key={group.groupId}
-                            label={group.name}
-                            name="groups"
-                        />;
-                    });
-                });
+                setGroups(data.groups);
             })
             .catch((error) => {
                 console.debug(error);
             });
-    });
+    }, []);
+
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setSelectedGroup(event.target.value);
+    };
 
     return (
         <>
             <h4>Auswahl der Gruppen:</h4>
             <Form id="groups">
-                {radioButtonsTemplate}
-                <Button className="mt-5" type="reset" variant="secondary">Auswahl aufheben</Button>
+                {groups.map((group) => (
+                    <Form.Check
+                        className={styles.groups}
+                        type="radio"
+                        id={group.groupId}
+                        key={group.groupId}
+                        label={group.name}
+                        value={group.name}
+                        name="groups"
+                        checked={selectedGroup === group.name}
+                        onChange={handleChange}
+                    />
+                ))}
+                <Button className="mt-5" variant="secondary" onClick={() => setSelectedGroup('')}>
+                    Auswahl aufheben
+                </Button>
             </Form>
         </>
     );

@@ -13,39 +13,38 @@ import {Fill, Stroke, Style} from 'ol/style';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
+
+import AgriCrop from "../models/AgriCrop";
+import Sensor from "../models/Sensor";
 import {getAgriCropPolygon, getAgvolutionSensorsLocations, getSentekSensorsLocations} from '../services/fiwareService';
 
 interface Props {
-    id: string
-}
-
-interface SensorResponse {
     id: string,
-    type: string,
-    location: {
-        type: string,
-        coordinates: Coordinate
-    } | null
-}
-
-interface Sensor {
-    id: string,
-    type: string,
-    coordinates: Coordinate
+    agriCrops: AgriCrop[],
+    sensors: Sensor[]
 }
 
 interface AgriCropResponse {
     id: string,
     type: string,
-    location: {
-        type: string,
-        coordinates: Coordinate[]
-    }
+    location: MultiLocationResponse
 }
 
-interface AgriCrop {
-    id: string,
+interface MultiLocationResponse {
+    type: string,
     coordinates: Coordinate[]
+}
+
+interface SensorResponse {
+    id: string,
+    type: string,
+    customGroup: string,
+    location: SingleLocationResponse | null
+}
+
+interface SingleLocationResponse {
+    type: string,
+    coordinates: Coordinate
 }
 
 function removeSensorByIdAndType(sensors: Sensor[], id: string, type: string) {
@@ -63,7 +62,7 @@ function removeAgriCropById(agriCrops: AgriCrop[], id: string) {
     }
 }
 
-function updateSensors(map: Map, vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
+function updateSensors(vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
     const features: Feature<Point>[] = [];
     sensors.map((sensor: Sensor) => {
         features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
@@ -94,7 +93,7 @@ function fitMap(map: Map, extent: Extent | undefined) {
     }
 }
 
-function handleSensorsResponse(_sensors: SensorResponse[], map: Map, vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
+function handleSensorsResponse(_sensors: SensorResponse[], vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
     if (Array.isArray(_sensors)) {
         _sensors.map((_sensor: SensorResponse) => {
             removeSensorByIdAndType(sensors, _sensor.id, _sensor.type);
@@ -105,7 +104,7 @@ function handleSensorsResponse(_sensors: SensorResponse[], map: Map, vectorSourc
                     coordinates: _sensor.location.coordinates
                 });
             }
-            updateSensors(map, vectorSource, sensors);
+            updateSensors(vectorSource, sensors);
         });
     }
 }
@@ -133,7 +132,7 @@ const style = new Style({
     }),
 });
 
-function OpenLayers({ id }: Props) {
+function OpenLayers({ agriCrops, id, sensors }: Props) {
 
     const osmLayer = new TileLayer({
         preload: Infinity,
@@ -142,8 +141,6 @@ function OpenLayers({ id }: Props) {
 
     const pointFeatures: Feature<Point>[] = [];
     const polygonFeatures: Feature<Polygon>[] = [];
-    const sensors: Sensor[] = [];
-    const agriCrops: AgriCrop[] = [];
 
     const pointVectorSource = new VectorSource({ features: pointFeatures });
     const polygonVectorSource = new VectorSource({ features: polygonFeatures });
@@ -164,7 +161,6 @@ function OpenLayers({ id }: Props) {
         getAgvolutionSensorsLocations()
             .then((response) => handleSensorsResponse(
                 response.data,
-                map,
                 pointVectorSource,
                 sensors
             ))
@@ -175,7 +171,6 @@ function OpenLayers({ id }: Props) {
         getSentekSensorsLocations()
             .then((response) => handleSensorsResponse(
                 response.data,
-                map,
                 pointVectorSource,
                 sensors
             ))
