@@ -20,7 +20,7 @@ interface TenantGroupsResponse {
 function SingleSelectionGroups() {
 
     const [groups, setGroups] = useState<TenantGroup[]>([]);
-    const [selectedGroup, setSelectedGroup] = useState('');
+    const [selectedGroup, setSelectedGroup] = useState<TenantGroup|undefined>();
 
     useEffect(() => {
         getTenantGroups()
@@ -34,7 +34,9 @@ function SingleSelectionGroups() {
     }, []);
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setSelectedGroup(event.target.value);
+        const groupName = event.target.value;
+        const selectedGroup = groups.find((group) => group.name === groupName);
+        setSelectedGroup(selectedGroup);
     };
 
     return (
@@ -50,11 +52,11 @@ function SingleSelectionGroups() {
                         label={group.name}
                         value={group.name}
                         name="groups"
-                        checked={selectedGroup === group.name}
+                        checked={selectedGroup?.name === group.name}
                         onChange={handleChange}
                     />
                 ))}
-                <Button className="mt-5" variant="secondary" onClick={() => setSelectedGroup('')}>
+                <Button className="mt-5" variant="secondary" onClick={() => setSelectedGroup(undefined)}>
                     Auswahl aufheben
                 </Button>
             </Form>
