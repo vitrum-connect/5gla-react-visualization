@@ -1,43 +1,18 @@
 import styles from './SingleSelectionGroups.module.css';
 
-import React, {ChangeEvent, useEffect, useState} from 'react';
+import React from 'react';
 import {Button, Form} from 'react-bootstrap';
 
-import {getTenantGroups} from '../services/tenantApiService';
+import TenantGroup from '../models/TenantGroup';
 
-interface TenantGroup {
-    name: string,
-    description: string,
-    groupId: string,
-    sensorIdsAssignedToGroup: string[]
+interface Props {
+    groups: TenantGroup[],
+    handleChange: any,
+    handleReset: any,
+    selectedGroup: TenantGroup|undefined
 }
 
-interface TenantGroupsResponse {
-    timestamp: string,
-    groups: TenantGroup[]
-}
-
-function SingleSelectionGroups() {
-
-    const [groups, setGroups] = useState<TenantGroup[]>([]);
-    const [selectedGroup, setSelectedGroup] = useState<TenantGroup|undefined>();
-
-    useEffect(() => {
-        getTenantGroups()
-            .then((response) => {
-                const data: TenantGroupsResponse = response.data;
-                setGroups(data.groups);
-            })
-            .catch((error) => {
-                console.debug(error);
-            });
-    }, []);
-
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const groupName = event.target.value;
-        const selectedGroup = groups.find((group) => group.name === groupName);
-        setSelectedGroup(selectedGroup);
-    };
+function SingleSelectionGroups({ handleChange, handleReset, groups, selectedGroup }: Props) {
 
     return (
         <>
@@ -56,7 +31,7 @@ function SingleSelectionGroups() {
                         onChange={handleChange}
                     />
                 ))}
-                <Button className="mt-5" variant="secondary" onClick={() => setSelectedGroup(undefined)}>
+                <Button className="mt-5" variant="secondary" onClick={handleReset}>
                     Auswahl aufheben
                 </Button>
             </Form>
