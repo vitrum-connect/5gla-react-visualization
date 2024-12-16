@@ -35,7 +35,7 @@ function fitMap(mapView: View | undefined, extent: Extent | undefined) {
 
 function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
 
-    const mapRef = useRef<Map | null>(null);
+    const mapRef = useRef<Map | undefined>(undefined);
 
     const osmLayer = new TileLayer({
         preload: Infinity,
@@ -63,7 +63,10 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
 
     function updateAgriCrops (map: Map | undefined) {
         const features: Feature<Polygon>[] = [];
-        agriCrops.map((agriCrop: AgriCrop) => {
+        const _agriCrops = agriCrops.filter((agriCrop) => {
+            return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
+        });
+        _agriCrops.map((agriCrop: AgriCrop) => {
             const lonLatCoordinates: Coordinate[] = [];
             agriCrop.coordinates.map((coordinate) => {
                 lonLatCoordinates.push(fromLonLat(coordinate));
@@ -76,7 +79,6 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         polygonVectorSource.addFeatures(features);
         fitMap(map?.getView(), polygonVectorSource.getExtent());
     }
-
 
     useEffect(() => {
         const map = new Map({
@@ -123,8 +125,6 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             pointVectorSource.addFeatures(features);
         }
 
-        updateAgriCrops(map);
-
         getAgvolutionSensorsLocations()
             .then((response) => handleSensorsResponse(response.data))
             .catch((error) => {
@@ -137,37 +137,15 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
                 console.debug(error);
             });
 
-        return () => map?.setTarget(undefined)
+        return () => map.setTarget(undefined)
     }, []);
 
     useEffect(() => {
-        if (mapRef.current) {
-            const map = mapRef.current;
-            const features: Feature<Polygon>[] = [];
-            const _agriCrops = agriCrops.filter((agriCrop) => {
-                return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
-            });
-            _agriCrops.map((_agriCrop: AgriCrop) => {
-                const lonLatCoordinates: Coordinate[] = [];
-                _agriCrop.coordinates.map((coordinate) => {
-                    lonLatCoordinates.push(fromLonLat(coordinate));
-                });
-                const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-                polygonFeature.setStyle(style);
-                features.push(polygonFeature);
-            });
-            polygonVectorSource.clear();
-            polygonVectorSource.addFeatures(features);
-            fitMap(map?.getView(), polygonVectorSource.getExtent());
-        }
-    }, [selectedGroup, agriCrops]);
-
-    useEffect(() => {
-        if (mapRef.current) {
+        if (mapRef.current && agriCrops.length > 0) {
             const map = mapRef.current;
             updateAgriCrops(map);
         }
-    }, [agriCrops]);
+    }, [agriCrops, selectedGroup]);
 
     return <div id={id} className={styles.map}></div>;
 }
