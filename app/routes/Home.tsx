@@ -7,13 +7,9 @@ import AgriCropResponse from '../models/AgriCropResponse';
 import Sensor from '../models/Sensor';
 import SensorResponse from '../models/SensorResponse';
 import TenantGroup from '../models/TenantGroup';
+import TenantGroupsResponse from '../models/TenantGroupsResponse';
 import {getAgriCropPolygon, getAgvolutionSensorsLocations, getSentekSensorsLocations} from '../services/fiwareService';
 import {getTenantGroups} from '../services/tenantApiService';
-
-interface TenantGroupsResponse {
-    timestamp: string,
-    groups: TenantGroup[]
-}
 
 function Home() {
     const [agriCropsLoaded, setAgriCropsLoaded] = useState<boolean>(false);
