@@ -16,9 +16,7 @@ import styles from './OpenLayers.module.css';
 
 import AgriCrop from '../models/AgriCrop';
 import Sensor from '../models/Sensor';
-import SensorResponse from '../models/SensorResponse';
 import TenantGroup from '../models/TenantGroup';
-import {getAgvolutionSensorsLocations, getSentekSensorsLocations} from '../services/fiwareService';
 
 interface Props {
     id: string,
@@ -61,12 +59,14 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         }),
     });
 
-    function updateAgriCrops (map: Map | undefined) {
+    function updateAgriCrops () {
+        const map = mapRef.current;
+        if (!map || agriCrops.length === 0) return;
         const features: Feature<Polygon>[] = [];
         const _agriCrops = agriCrops.filter((agriCrop) => {
             return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
         });
-        _agriCrops.map((agriCrop: AgriCrop) => {
+        _agriCrops.forEach((agriCrop: AgriCrop) => {
             const lonLatCoordinates: Coordinate[] = [];
             agriCrop.coordinates.map((coordinate) => {
                 lonLatCoordinates.push(fromLonLat(coordinate));
@@ -77,7 +77,21 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         });
         polygonVectorSource.clear();
         polygonVectorSource.addFeatures(features);
-        fitMap(map?.getView(), polygonVectorSource.getExtent());
+        fitMap(map.getView(), polygonVectorSource.getExtent());
+    }
+
+    function updateSensors() {
+        const map = mapRef.current;
+        if (!map || sensors.length === 0) return;
+        const features: Feature<Point>[] = [];
+        const _sensors = sensors.filter((sensor) => {
+            return !selectedGroup || sensor.customGroup === selectedGroup.groupId;
+        });
+        _sensors.forEach((sensor: Sensor) => {
+            features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
+        });
+        pointVectorSource.clear();
+        pointVectorSource.addFeatures(features);
     }
 
     useEffect(() => {
@@ -92,60 +106,21 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
 
         mapRef.current = map;
 
-        function handleSensorsResponse(_sensors: SensorResponse[]) {
-            if (Array.isArray(_sensors)) {
-                _sensors.map((_sensor: SensorResponse) => {
-                    removeSensorByIdAndType(_sensor.id, _sensor.type);
-                    if (_sensor.location !== null) {
-                        sensors.push({
-                            id: _sensor.id,
-                            type: _sensor.type,
-                            coordinates: _sensor.location.coordinates
-                        });
-                    }
-                });
-                updateSensors();
-            }
-        }
-
-        function removeSensorByIdAndType(id: string, type: string) {
-            const index: number = sensors
-                .findIndex((sensor: Sensor): boolean => sensor?.id === id && sensor.type === type);
-            if (index >= 0) {
-                sensors.splice(index, 1);
-            }
-        }
-
-        function updateSensors() {
-            const features: Feature<Point>[] = [];
-            sensors.map((sensor: Sensor) => {
-                features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
-            });
-            pointVectorSource.clear();
-            pointVectorSource.addFeatures(features);
-        }
-
-        getAgvolutionSensorsLocations()
-            .then((response) => handleSensorsResponse(response.data))
-            .catch((error) => {
-                console.debug(error);
-            });
-
-        getSentekSensorsLocations()
-            .then((response) => handleSensorsResponse(response.data))
-            .catch((error) => {
-                console.debug(error);
-            });
-
         return () => map.setTarget(undefined)
     }, []);
 
     useEffect(() => {
         if (mapRef.current && agriCrops.length > 0) {
-            const map = mapRef.current;
-            updateAgriCrops(map);
+            updateAgriCrops();
         }
     }, [agriCrops, selectedGroup]);
+
+    useEffect(() => {
+        if (mapRef.current && sensors.length > 0) {
+            const map = mapRef.current;
+            updateSensors();
+        }
+    }, [sensors]);
 
     return <div id={id} className={styles.map}></div>;
 }

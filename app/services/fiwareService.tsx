@@ -17,7 +17,7 @@ function getRequestFromFiwareServer(params = {}, headers = {}) {
 export function getAgvolutionSensorsLocations() {
     return getRequestFromFiwareServer({
         type: 'AgvolutionSensor',
-        attrs: 'location',
+        attrs: 'customGroup,location',
         options: 'keyValues'
     });
 }
@@ -25,7 +25,7 @@ export function getAgvolutionSensorsLocations() {
 export function getSentekSensorsLocations() {
     return getRequestFromFiwareServer({
         type: 'SentekSensor',
-        attrs: 'location',
+        attrs: 'customGroup,location',
         options: 'keyValues'
     });
 }
