@@ -8,6 +8,8 @@ ADD . /app/
 WORKDIR /app
 
 # install app
+ARG VITE_FIWARE_SERVER_BASE_URL=localhost
+ENV VITE_FIWARE_SERVER_BASE_URL=$VITE_FIWARE_SERVER_BASE_URL
 RUN npm install && npm run build
 
 # expose web port
