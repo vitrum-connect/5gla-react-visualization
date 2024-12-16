@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 
 import {Feature, Map, View} from 'ol';
 import {Coordinate} from 'ol/coordinate';
@@ -27,17 +27,15 @@ interface Props {
     sensors: Sensor[]
 }
 
-const style = new Style({
-    fill: new Fill({
-        color: 'rgba(0, 128, 255, 0.4)',
-    }),
-    stroke: new Stroke({
-        color: 'blue',
-        width: 2,
-    }),
-});
+function fitMap(mapView: View | undefined, extent: Extent | undefined) {
+    if (mapView && extent && extent.length === 4 && extent.every((element: number): boolean => isFinite(element))) {
+        mapView.fit(extent, { padding: [50, 50, 50, 50] });
+    }
+}
 
 function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
+
+    const mapRef = useRef<Map | null>(null);
 
     const osmLayer = new TileLayer({
         preload: Infinity,
@@ -53,6 +51,33 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
     const pointVectorLayer = new VectorLayer({ source: pointVectorSource });
     const polygonVectorLayer = new VectorLayer({ source: polygonVectorSource });
 
+    const style = new Style({
+        fill: new Fill({
+            color: 'rgba(0, 128, 255, 0.4)',
+        }),
+        stroke: new Stroke({
+            color: 'blue',
+            width: 2,
+        }),
+    });
+
+    function updateAgriCrops (map: Map | undefined) {
+        const features: Feature<Polygon>[] = [];
+        agriCrops.map((agriCrop: AgriCrop) => {
+            const lonLatCoordinates: Coordinate[] = [];
+            agriCrop.coordinates.map((coordinate) => {
+                lonLatCoordinates.push(fromLonLat(coordinate));
+            });
+            const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
+            polygonFeature.setStyle(style);
+            features.push(polygonFeature);
+        });
+        polygonVectorSource.clear();
+        polygonVectorSource.addFeatures(features);
+        fitMap(map?.getView(), polygonVectorSource.getExtent());
+    }
+
+
     useEffect(() => {
         const map = new Map({
             target: id,
@@ -63,11 +88,7 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             }),
         });
 
-        function fitMap(extent: Extent | undefined) {
-            if (extent && extent.length === 4 && extent.every((element: number): boolean => isFinite(element))) {
-                map.getView().fit(extent, { padding: [50, 50, 50, 50] });
-            }
-        }
+        mapRef.current = map;
 
         function handleSensorsResponse(_sensors: SensorResponse[]) {
             if (Array.isArray(_sensors)) {
@@ -93,22 +114,6 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             }
         }
 
-        function updateAgriCrops () {
-            const features: Feature<Polygon>[] = [];
-            agriCrops.map((agriCrop: AgriCrop) => {
-                const lonLatCoordinates: Coordinate[] = [];
-                agriCrop.coordinates.map((coordinate) => {
-                    lonLatCoordinates.push(fromLonLat(coordinate));
-                });
-                const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-                polygonFeature.setStyle(style);
-                features.push(polygonFeature);
-            });
-            polygonVectorSource.clear();
-            polygonVectorSource.addFeatures(features);
-            fitMap(polygonVectorSource.getExtent());
-        }
-
         function updateSensors() {
             const features: Feature<Point>[] = [];
             sensors.map((sensor: Sensor) => {
@@ -117,6 +122,8 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             pointVectorSource.clear();
             pointVectorSource.addFeatures(features);
         }
+
+        updateAgriCrops(map);
 
         getAgvolutionSensorsLocations()
             .then((response) => handleSensorsResponse(response.data))
@@ -130,41 +137,36 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
                 console.debug(error);
             });
 
-        return () => map.setTarget(undefined)
+        return () => map?.setTarget(undefined)
     }, []);
 
     useEffect(() => {
-        const features: Feature<Polygon>[] = [];
-        const _agriCrops = agriCrops.filter((agriCrop) => {
-            return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
-        });
-        _agriCrops.map((_agriCrop: AgriCrop) => {
-            const lonLatCoordinates: Coordinate[] = [];
-            _agriCrop.coordinates.map((coordinate) => {
-                lonLatCoordinates.push(fromLonLat(coordinate));
+        if (mapRef.current) {
+            const map = mapRef.current;
+            const features: Feature<Polygon>[] = [];
+            const _agriCrops = agriCrops.filter((agriCrop) => {
+                return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
             });
-            const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-            polygonFeature.setStyle(style);
-            features.push(polygonFeature);
-        });
-        polygonVectorSource.clear();
-        polygonVectorSource.addFeatures(features);
-    }, [selectedGroup]);
+            _agriCrops.map((_agriCrop: AgriCrop) => {
+                const lonLatCoordinates: Coordinate[] = [];
+                _agriCrop.coordinates.map((coordinate) => {
+                    lonLatCoordinates.push(fromLonLat(coordinate));
+                });
+                const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
+                polygonFeature.setStyle(style);
+                features.push(polygonFeature);
+            });
+            polygonVectorSource.clear();
+            polygonVectorSource.addFeatures(features);
+            fitMap(map?.getView(), polygonVectorSource.getExtent());
+        }
+    }, [selectedGroup, agriCrops]);
 
     useEffect(() => {
-        const features: Feature<Polygon>[] = [];
-        agriCrops.map((agriCrop: AgriCrop) => {
-            const lonLatCoordinates: Coordinate[] = [];
-            agriCrop.coordinates.map((coordinate) => {
-                lonLatCoordinates.push(fromLonLat(coordinate));
-            });
-            const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-            polygonFeature.setStyle(style);
-            features.push(polygonFeature);
-        });
-        polygonVectorSource.clear();
-        polygonVectorSource.addFeatures(features);
-        // fitMap(polygonVectorSource.getExtent());
+        if (mapRef.current) {
+            const map = mapRef.current;
+            updateAgriCrops(map);
+        }
     }, [agriCrops]);
 
     return <div id={id} className={styles.map}></div>;

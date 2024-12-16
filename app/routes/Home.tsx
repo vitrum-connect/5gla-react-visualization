@@ -6,7 +6,7 @@ import AgriCrop from '../models/AgriCrop';
 import AgriCropResponse from '../models/AgriCropResponse';
 import Sensor from '../models/Sensor';
 import TenantGroup from '../models/TenantGroup';
-import {getAgriCropPolygonExample} from '../services/fiwareService';
+import {getAgriCropPolygon} from '../services/fiwareService';
 import {getTenantGroups} from '../services/tenantApiService';
 
 interface TenantGroupsResponse {
@@ -36,7 +36,7 @@ function Home() {
             .catch((error) => {
                 console.debug(error);
             });
-        getAgriCropPolygonExample()
+        getAgriCropPolygon()
             .then((response) => {
                 const _agriCrops = response.data;
                 if (Array.isArray(_agriCrops)) {
