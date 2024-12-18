@@ -1,12 +1,13 @@
 import React from 'react';
 import styles from './Home.module.css';
 import OpenLayers from '../components/OpenLayers';
+import SingleSelectionGroups from '../components/SingleSelectionGroups';
 
 function Home() {
   return (
       <div className={styles.container}>
         <div className={styles.filter}>
-          <p>Placeholder for filters</p>
+          <SingleSelectionGroups />
         </div>
         <div className={styles.map}>
           <OpenLayers id="geo_server" />

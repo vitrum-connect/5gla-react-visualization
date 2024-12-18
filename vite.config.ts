@@ -14,6 +14,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
         plugins: [reactRouter()],
         server: {
             proxy: {
+                '/api/v1/sec/tenant': env.VITE_TENANT_API_SERVER_BASE_URL,
                 '/v2/entities': env.VITE_FIWARE_SERVER_BASE_URL
             }
         }

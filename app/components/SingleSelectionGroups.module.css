@@ -1,0 +1,8 @@
+.groups {
+    border-bottom: thin black solid;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    > label {
+        font-weight: bold;
+    }
+}

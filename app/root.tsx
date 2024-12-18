@@ -9,6 +9,7 @@ import {
 } from 'react-router';
 
 import stylesheet from './app.css?url';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import Breadcrumbs from './components/Breadcrumbs';
 import Footer from './components/Footer';
