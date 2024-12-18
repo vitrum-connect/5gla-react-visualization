@@ -41,8 +41,14 @@ interface Props {
 }
 
 function fitMap(mapView: View | undefined, extent: Extent | undefined) {
-    if (mapView && extent && extent.length === 4 && extent.every((element: number): boolean => isFinite(element))) {
+    if (!mapView) {
+        return;
+    }
+    if (extent && extent.length === 4 && extent.every((element: number): boolean => isFinite(element))) {
         mapView.fit(extent, { padding: [50, 50, 50, 50] });
+    } else {
+        mapView.setCenter([0, 0]);
+        mapView.setZoom(0);
     }
 }
 
