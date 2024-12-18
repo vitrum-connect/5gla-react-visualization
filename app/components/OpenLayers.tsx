@@ -18,6 +18,21 @@ import AgriCrop from '../models/AgriCrop';
 import Sensor from '../models/Sensor';
 import TenantGroup from '../models/TenantGroup';
 
+const polygonVectorLayerName = 'polygonVectorLayer';
+const pointVectorLayerName = 'pointVectorLayer';
+
+function createPolygonVectorLayer(name: string, source: VectorSource<Feature<Polygon>>) {
+    const vectorSource = new VectorLayer({ source: source });
+    vectorSource.set('name', name);
+    return vectorSource;
+}
+
+function createPointVectorLayer(name: string, source: VectorSource<Feature<Point>>) {
+    const vectorSource = new VectorLayer({ source: source });
+    vectorSource.set('name', name);
+    return vectorSource;
+}
+
 interface Props {
     id: string,
     agriCrops: AgriCrop[],
@@ -46,8 +61,8 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
     const pointVectorSource = new VectorSource({ features: pointFeatures });
     const polygonVectorSource = new VectorSource({ features: polygonFeatures });
 
-    const pointVectorLayer = new VectorLayer({ source: pointVectorSource });
-    const polygonVectorLayer = new VectorLayer({ source: polygonVectorSource });
+    let pointVectorLayer = createPointVectorLayer(pointVectorLayerName, pointVectorSource);
+    let polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
 
     const style = new Style({
         fill: new Fill({
@@ -77,6 +92,13 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         });
         polygonVectorSource.clear();
         polygonVectorSource.addFeatures(features);
+        const vectorLayerToRemove = map.getLayers().getArray()
+            .find(layer => layer.get('name') === polygonVectorLayerName);
+        if (vectorLayerToRemove) {
+            map.removeLayer(vectorLayerToRemove);
+        }
+        polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
+        map.addLayer(polygonVectorLayer);
         fitMap(map.getView(), polygonVectorSource.getExtent());
     }
 
@@ -92,6 +114,13 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         });
         pointVectorSource.clear();
         pointVectorSource.addFeatures(features);
+        const vectorLayerToRemove = map.getLayers().getArray()
+            .find(layer => layer.get('name') === pointVectorLayerName);
+        if (vectorLayerToRemove) {
+            map.removeLayer(vectorLayerToRemove);
+        }
+        pointVectorLayer = createPointVectorLayer(pointVectorLayerName, pointVectorSource);
+        map.addLayer(pointVectorLayer);
     }
 
     useEffect(() => {
@@ -117,10 +146,9 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
 
     useEffect(() => {
         if (mapRef.current && sensors.length > 0) {
-            const map = mapRef.current;
             updateSensors();
         }
-    }, [sensors]);
+    }, [sensors, selectedGroup]);
 
     return <div id={id} className={styles.map}></div>;
 }

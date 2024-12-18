@@ -56,14 +56,8 @@ function Home() {
 
         function handleSensorsResponse(_sensors: SensorResponse[]) {
             if (Array.isArray(_sensors)) {
-                const oldSensors: Sensor[] = [...sensors];
                 const newSensors: Sensor[] = [];
                 _sensors.map((_sensor: SensorResponse) => {
-                    const index: number = oldSensors
-                        .findIndex((oldSensor: Sensor): boolean => oldSensor?.id === _sensor.id && oldSensor.type === _sensor.type);
-                    if (index >= 0) {
-                        oldSensors.splice(index, 1);
-                    }
                     if (_sensor.location !== null) {
                         newSensors.push({
                             id: _sensor.id,
@@ -73,7 +67,16 @@ function Home() {
                         });
                     }
                 });
-                setSensors([...oldSensors, ...newSensors]);
+                setSensors((oldSensors) => {
+                    newSensors.forEach((newSensor) => {
+                        const index: number = oldSensors
+                            .findIndex((oldSensor: Sensor): boolean => oldSensor?.id === newSensor.id && oldSensor.type === newSensor.type);
+                        if (index >= 0) {
+                            oldSensors.splice(index, 1);
+                        }
+                    });
+                    return [...oldSensors, ...newSensors]
+                });
             }
         }
 
