@@ -15,4 +15,7 @@
     a.active {
         font-weight: bold;
     }
+    a.disabled {
+        pointer-events: none;
+    }
 }

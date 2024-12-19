@@ -16,7 +16,7 @@ function calculateNavLinkClassNames(isActive: boolean, disabled: boolean) {
         classNames.push(styles.active);
     }
     if (disabled) {
-        classNames.push('disabled');
+        classNames.push(styles.disabled);
     }
     return classNames.join(' ');
 }
@@ -38,7 +38,7 @@ function Breadcrumbs() {
                 const label: string = routeLabels[pathname] || pathname;
                 const disabled = routeWithoutLink.includes(pathname);
                 return <NavLink
-                    to={disabled ? to : '#'}
+                    to={disabled ? '#' : to}
                     className={({ isActive }) => calculateNavLinkClassNames(isActive, disabled)}
                     key={pathname}
                 >
