@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 
 import {Feature, Map, View} from 'ol';
 import {Coordinate} from 'ol/coordinate';
-import {Extent} from "ol/extent";
+import {Extent} from 'ol/extent';
 import {Point, Polygon} from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from "ol/layer/Vector";
@@ -10,6 +10,7 @@ import {fromLonLat} from 'ol/proj';
 import {OSM} from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import {Fill, Stroke, Style} from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
@@ -17,7 +18,6 @@ import styles from './OpenLayers.module.css';
 import AgriCrop from '../models/AgriCrop';
 import Sensor from '../models/Sensor';
 import TenantGroup from '../models/TenantGroup';
-import CircleStyle from "ol/style/Circle";
 
 const polygonVectorLayerName = 'polygonVectorLayer';
 const pointVectorLayerName = 'pointVectorLayer';
