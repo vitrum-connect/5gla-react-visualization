@@ -52,6 +52,9 @@ function Home() {
                     setAgriCrops(newAgriCrops);
                     setAgriCropsLoaded(true);
                 }
+            })
+            .catch((error) => {
+                console.debug(error);
             });
 
         function handleSensorsResponse(_sensors: SensorResponse[]) {
@@ -62,6 +65,7 @@ function Home() {
                         newSensors.push({
                             id: _sensor.id,
                             type: _sensor.type,
+                            name: _sensor.name,
                             customGroup: _sensor.customGroup,
                             coordinates: _sensor.location.coordinates
                         });

@@ -1,6 +1,6 @@
 import styles from './SingleSelectionGroups.module.css';
 
-import React from 'react';
+import React, {ChangeEventHandler, MouseEventHandler} from 'react';
 import {Button, Form} from 'react-bootstrap';
 import {NavLink} from 'react-router';
 
@@ -8,8 +8,8 @@ import TenantGroup from '../models/TenantGroup';
 
 interface Props {
     groups: TenantGroup[],
-    handleChange: any,
-    handleReset: any,
+    handleChange: ChangeEventHandler,
+    handleReset: MouseEventHandler,
     selectedGroup: TenantGroup|undefined
 }
 
