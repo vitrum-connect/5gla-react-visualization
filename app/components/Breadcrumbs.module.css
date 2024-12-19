@@ -2,9 +2,16 @@
     background-color: #41485A;
     display: flex;
     padding: 10px min(4vh, 2vw);
+    @media only screen and (max-height: 767px) {
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
     a {
         color: white;
         font-size: large;
+        @media only screen and (max-height: 767px) {
+            font-size: medium;
+        }
         text-decoration: none;
     }
     a + a:before {
