@@ -17,16 +17,34 @@ function getRequestFromFiwareServer(params = {}, headers = {}) {
 export function getAgvolutionSensorsLocations() {
     return getRequestFromFiwareServer({
         type: 'AgvolutionSensor',
-        attrs: 'customGroup,location',
+        attrs: 'customGroup,location,name',
         options: 'keyValues'
+    });
+}
+
+export function getAgvolutionSensorsLocationsByGroupId(groupId: string) {
+    return getRequestFromFiwareServer({
+        type: 'AgvolutionSensor',
+        attrs: 'customGroup,location,name',
+        options: 'keyValues',
+        q: `customGroup==${groupId}`
     });
 }
 
 export function getSentekSensorsLocations() {
     return getRequestFromFiwareServer({
         type: 'SentekSensor',
-        attrs: 'customGroup,location',
+        attrs: 'customGroup,location,name',
         options: 'keyValues'
+    });
+}
+
+export function getSentekSensorsLocationsByGroupId(groupId: string) {
+    return getRequestFromFiwareServer({
+        type: 'SentekSensor',
+        attrs: 'customGroup,location,name',
+        options: 'keyValues',
+        q: `customGroup==${groupId}`
     });
 }
 
@@ -35,5 +53,14 @@ export function getAgriCropPolygon() {
         type: 'AgriCrop',
         attrs: 'customGroup,location',
         options: 'keyValues'
+    });
+}
+
+export function getAgriCropPolygonByGroupId(groupId: string) {
+    return getRequestFromFiwareServer({
+        type: 'AgriCrop',
+        attrs: 'customGroup,location',
+        options: 'keyValues',
+        q: `customGroup==${groupId}`
     });
 }

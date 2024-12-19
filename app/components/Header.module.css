@@ -5,4 +5,9 @@
     padding: 20px min(4vh, 2vw);
     text-align: center;
     text-decoration: none;
+    @media only screen and (max-height: 767px) {
+        font-size: xx-large;
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
 }

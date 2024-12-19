@@ -5,6 +5,10 @@
     gap: 40px;
     list-style: none;
     padding: 20px min(4vh, 2vw);
+    @media only screen and (max-height: 767px) {
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
     a {
         color: white;
         font-size: x-large;
