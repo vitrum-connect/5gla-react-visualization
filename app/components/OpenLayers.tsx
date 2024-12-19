@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 
 import {Feature, Map, View} from 'ol';
 import {Coordinate} from 'ol/coordinate';
@@ -13,127 +13,48 @@ import {Fill, Stroke, Style} from 'ol/style';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
-import {getAgriCropPolygon, getAgvolutionSensorsLocations, getSentekSensorsLocations} from '../services/fiwareService';
+
+import AgriCrop from '../models/AgriCrop';
+import Sensor from '../models/Sensor';
+import TenantGroup from '../models/TenantGroup';
+
+const polygonVectorLayerName = 'polygonVectorLayer';
+const pointVectorLayerName = 'pointVectorLayer';
+
+function createPolygonVectorLayer(name: string, source: VectorSource<Feature<Polygon>>) {
+    const vectorSource = new VectorLayer({ source: source });
+    vectorSource.set('name', name);
+    return vectorSource;
+}
+
+function createPointVectorLayer(name: string, source: VectorSource<Feature<Point>>) {
+    const vectorSource = new VectorLayer({ source: source });
+    vectorSource.set('name', name);
+    return vectorSource;
+}
 
 interface Props {
-    id: string
+    id: string,
+    agriCrops: AgriCrop[],
+    selectedGroup: TenantGroup|undefined,
+    sensors: Sensor[]
 }
 
-interface SensorResponse {
-    id: string,
-    type: string,
-    location: {
-        type: string,
-        coordinates: Coordinate
-    } | null
-}
-
-interface Sensor {
-    id: string,
-    type: string,
-    coordinates: Coordinate
-}
-
-interface AgriCropResponse {
-    id: string,
-    type: string,
-    location: {
-        type: string,
-        coordinates: Coordinate[]
+function fitMap(mapView: View | undefined, extent: Extent | undefined) {
+    if (!mapView) {
+        return;
     }
-}
-
-interface AgriCrop {
-    id: string,
-    coordinates: Coordinate[]
-}
-
-function removeSensorByIdAndType(sensors: Sensor[], id: string, type: string) {
-    const index: number = sensors
-        .findIndex((sensor: Sensor): boolean => sensor.id === id && sensor.type === type);
-    if (index >= 0) {
-        delete sensors[index];
-    }
-}
-
-function removeAgriCropById(agriCrops: AgriCrop[], id: string) {
-    const index: number = agriCrops.findIndex((agriCrop: AgriCrop) => agriCrop.id === id);
-    if (index > 0) {
-        delete agriCrops[index];
-    }
-}
-
-function updateSensors(map: Map, vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
-    const features: Feature<Point>[] = [];
-    sensors.map((sensor: Sensor) => {
-        features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
-    });
-    vectorSource.clear();
-    vectorSource.addFeatures(features);
-}
-
-function updateAgriCrops(map: Map, vectorSource: VectorSource<Feature<Polygon>>, agriCrops: AgriCrop[]) {
-    const features: Feature<Polygon>[] = [];
-    agriCrops.map((agriCrop: AgriCrop) => {
-        const lonLatCoordinates: Coordinate[] = [];
-        agriCrop.coordinates.map((coordinate) => {
-            lonLatCoordinates.push(fromLonLat(coordinate));
-        })
-        const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-        polygonFeature.setStyle(style);
-        features.push(polygonFeature);
-    });
-    vectorSource.clear();
-    vectorSource.addFeatures(features);
-    fitMap(map, vectorSource.getExtent());
-}
-
-function fitMap(map: Map, extent: Extent | undefined) {
     if (extent && extent.length === 4 && extent.every((element: number): boolean => isFinite(element))) {
-        map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+        mapView.fit(extent, { padding: [50, 50, 50, 50] });
+    } else {
+        mapView.setCenter([0, 0]);
+        mapView.setZoom(0);
     }
 }
 
-function handleSensorsResponse(_sensors: SensorResponse[], map: Map, vectorSource: VectorSource<Feature<Point>>, sensors: Sensor[]) {
-    if (Array.isArray(_sensors)) {
-        _sensors.map((_sensor: SensorResponse) => {
-            removeSensorByIdAndType(sensors, _sensor.id, _sensor.type);
-            if (_sensor.location !== null) {
-                sensors.push({
-                    id: _sensor.id,
-                    type: _sensor.type,
-                    coordinates: _sensor.location.coordinates
-                });
-            }
-            updateSensors(map, vectorSource, sensors);
-        });
-    }
-}
+function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
 
-function handleAgriCropResponse(_agriCrops: AgriCropResponse[], map: Map, vectorSource: VectorSource<Feature<Polygon>>, agriCrops: AgriCrop[]) {
-    if (Array.isArray(_agriCrops)) {
-        _agriCrops.map((_agriCrop: AgriCropResponse) => {
-            removeAgriCropById(agriCrops, _agriCrop.id)
-            agriCrops.push({
-                id: _agriCrop.id,
-                coordinates: _agriCrop.location.coordinates
-            });
-        });
-        updateAgriCrops(map, vectorSource, agriCrops);
-    }
-}
-
-const style = new Style({
-    fill: new Fill({
-        color: 'rgba(0, 128, 255, 0.4)',
-    }),
-    stroke: new Stroke({
-        color: 'blue',
-        width: 2,
-    }),
-});
-
-function OpenLayers({ id }: Props) {
+    const mapRef = useRef<Map | undefined>(undefined);
 
     const osmLayer = new TileLayer({
         preload: Infinity,
@@ -142,14 +63,71 @@ function OpenLayers({ id }: Props) {
 
     const pointFeatures: Feature<Point>[] = [];
     const polygonFeatures: Feature<Polygon>[] = [];
-    const sensors: Sensor[] = [];
-    const agriCrops: AgriCrop[] = [];
 
     const pointVectorSource = new VectorSource({ features: pointFeatures });
     const polygonVectorSource = new VectorSource({ features: polygonFeatures });
 
-    const pointVectorLayer = new VectorLayer({ source: pointVectorSource });
-    const polygonVectorLayer = new VectorLayer({ source: polygonVectorSource });
+    let pointVectorLayer = createPointVectorLayer(pointVectorLayerName, pointVectorSource);
+    let polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
+
+    const style = new Style({
+        fill: new Fill({
+            color: 'rgba(0, 128, 255, 0.4)',
+        }),
+        stroke: new Stroke({
+            color: 'blue',
+            width: 2,
+        }),
+    });
+
+    function updateAgriCrops () {
+        const map = mapRef.current;
+        if (!map || agriCrops.length === 0) return;
+        const features: Feature<Polygon>[] = [];
+        const _agriCrops = agriCrops.filter((agriCrop) => {
+            return !selectedGroup || agriCrop.customGroup === selectedGroup.groupId;
+        });
+        _agriCrops.forEach((agriCrop: AgriCrop) => {
+            const lonLatCoordinates: Coordinate[] = [];
+            agriCrop.coordinates.map((coordinate) => {
+                lonLatCoordinates.push(fromLonLat(coordinate));
+            });
+            const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
+            polygonFeature.setStyle(style);
+            features.push(polygonFeature);
+        });
+        polygonVectorSource.clear();
+        polygonVectorSource.addFeatures(features);
+        const vectorLayerToRemove = map.getLayers().getArray()
+            .find(layer => layer.get('name') === polygonVectorLayerName);
+        if (vectorLayerToRemove) {
+            map.removeLayer(vectorLayerToRemove);
+        }
+        polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
+        map.addLayer(polygonVectorLayer);
+        fitMap(map.getView(), polygonVectorSource.getExtent());
+    }
+
+    function updateSensors() {
+        const map = mapRef.current;
+        if (!map || sensors.length === 0) return;
+        const features: Feature<Point>[] = [];
+        const _sensors = sensors.filter((sensor) => {
+            return !selectedGroup || sensor.customGroup === selectedGroup.groupId;
+        });
+        _sensors.forEach((sensor: Sensor) => {
+            features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
+        });
+        pointVectorSource.clear();
+        pointVectorSource.addFeatures(features);
+        const vectorLayerToRemove = map.getLayers().getArray()
+            .find(layer => layer.get('name') === pointVectorLayerName);
+        if (vectorLayerToRemove) {
+            map.removeLayer(vectorLayerToRemove);
+        }
+        pointVectorLayer = createPointVectorLayer(pointVectorLayerName, pointVectorSource);
+        map.addLayer(pointVectorLayer);
+    }
 
     useEffect(() => {
         const map = new Map({
@@ -161,41 +139,22 @@ function OpenLayers({ id }: Props) {
             }),
         });
 
-        getAgvolutionSensorsLocations()
-            .then((response) => handleSensorsResponse(
-                response.data,
-                map,
-                pointVectorSource,
-                sensors
-            ))
-            .catch((error) => {
-                console.debug(error);
-            });
-
-        getSentekSensorsLocations()
-            .then((response) => handleSensorsResponse(
-                response.data,
-                map,
-                pointVectorSource,
-                sensors
-            ))
-            .catch((error) => {
-                console.debug(error);
-            });
-
-        getAgriCropPolygon()
-            .then((response) => handleAgriCropResponse(
-                response.data,
-                map,
-                polygonVectorSource,
-                agriCrops
-            ))
-            .catch((error) => {
-                console.debug(error);
-            });
+        mapRef.current = map;
 
         return () => map.setTarget(undefined)
-    });
+    }, []);
+
+    useEffect(() => {
+        if (mapRef.current && agriCrops.length > 0) {
+            updateAgriCrops();
+        }
+    }, [agriCrops, selectedGroup]);
+
+    useEffect(() => {
+        if (mapRef.current && sensors.length > 0) {
+            updateSensors();
+        }
+    }, [sensors, selectedGroup]);
 
     return <div id={id} className={styles.map}></div>;
 }
