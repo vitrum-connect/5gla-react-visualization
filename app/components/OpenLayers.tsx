@@ -131,7 +131,9 @@ function OpenLayers({ agriCrops, id, selectedAgriCrop, selectedGroup, selectedSe
         }
         polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
         map.addLayer(polygonVectorLayer);
-        fitMap(map.getView(), polygonVectorSource.getExtent());
+        if (!selectedAgriCrop && !selectedSensor) {
+            fitMap(map.getView(), polygonVectorSource.getExtent());
+        }
     }
 
     function updateSensors() {
