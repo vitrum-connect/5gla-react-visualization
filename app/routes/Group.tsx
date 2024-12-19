@@ -31,6 +31,7 @@ function Group({ params }: Props) {
     const [agvolutionSensorsLoaded, setAgvolutionSensorsLoaded] = useState<boolean>(false);
     const [sentekSensorsLoaded, setSentekSensorsLoaded] = useState<boolean>(false);
 
+    const [selectedAgriCrop, setSelectedAgriCrop] = useState<AgriCrop | undefined>();
     const [selectedGroup, setSelectedGroup] = useState<TenantGroup | undefined>();
     const [selectedSensor, setSelectedSensor] = useState<Sensor | undefined>(undefined);
 
@@ -38,11 +39,16 @@ function Group({ params }: Props) {
     const [sensors, setSensors] = useState<Sensor[]>([]);
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const sensorId = event.target.value;
-        const selectedSensor = sensors.find((sensor) => sensor.id === sensorId);
+        const id = event.target.value;
+        const selectedAgriCrop = agriCrops.find((agriCrop) => agriCrop.id === id);
+        const selectedSensor = sensors.find((sensor) => sensor.id === id);
+        setSelectedAgriCrop(selectedAgriCrop);
         setSelectedSensor(selectedSensor);
     };
-    const handleReset = () => setSelectedSensor(undefined);
+    const handleReset = () => {
+        setSelectedAgriCrop(undefined);
+        setSelectedSensor(undefined);
+    };
 
     useEffect(() => {
         getTenantGroups()
@@ -134,6 +140,7 @@ function Group({ params }: Props) {
         ? <OpenLayers id="geo_server"
                       agriCrops={agriCrops}
                       sensors={sensors}
+                      selectedAgriCrop={selectedAgriCrop}
                       selectedGroup={selectedGroup}
                       selectedSensor={selectedSensor}/>
         : <p>Loading...</p>;
@@ -141,9 +148,11 @@ function Group({ params }: Props) {
     return (
         <div className={styles.container}>
             <div className={styles.filter}>
-                <SingleSelectionGroupContents sensors={sensors}
+                <SingleSelectionGroupContents agriCrops={agriCrops}
+                                              sensors={sensors}
                                               handleChange={handleChange}
                                               handleReset={handleReset}
+                                              selectedAgriCrop={selectedAgriCrop}
                                               selectedSensor={selectedSensor}/>
             </div>
             <div className={styles.map}>{openLayers}</div>
