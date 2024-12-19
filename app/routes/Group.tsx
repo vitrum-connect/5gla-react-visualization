@@ -131,7 +131,11 @@ function Group({ params }: Props) {
     }, [ selectedGroup ]);
 
     const openLayers = agriCropsLoaded && agvolutionSensorsLoaded && sentekSensorsLoaded
-        ? <OpenLayers id="geo_server" agriCrops={agriCrops} sensors={sensors} selectedGroup={selectedGroup}/>
+        ? <OpenLayers id="geo_server"
+                      agriCrops={agriCrops}
+                      sensors={sensors}
+                      selectedGroup={selectedGroup}
+                      selectedSensor={selectedSensor}/>
         : <p>Loading...</p>;
 
     return (
