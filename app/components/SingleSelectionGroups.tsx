@@ -1,14 +1,15 @@
 import styles from './SingleSelectionGroups.module.css';
 
-import React from 'react';
+import React, {ChangeEventHandler, MouseEventHandler} from 'react';
 import {Button, Form} from 'react-bootstrap';
+import {NavLink} from 'react-router';
 
 import TenantGroup from '../models/TenantGroup';
 
 interface Props {
     groups: TenantGroup[],
-    handleChange: any,
-    handleReset: any,
+    handleChange: ChangeEventHandler,
+    handleReset: MouseEventHandler,
     selectedGroup: TenantGroup|undefined
 }
 
@@ -31,9 +32,13 @@ function SingleSelectionGroups({ handleChange, handleReset, groups, selectedGrou
                         onChange={handleChange}
                     />
                 ))}
-                <Button className="mt-5" variant="secondary" onClick={handleReset}>
+                <Button className="mt-5" variant="secondary" onClick={handleReset} disabled={!selectedGroup}>
                     Auswahl aufheben
                 </Button>
+                <NavLink className={`btn btn-secondary ms-5 mt-5 ${selectedGroup ? '' : 'disabled'}`}
+                         to={selectedGroup ? '/group/' + selectedGroup.name : '#'}>
+                    Weiter
+                </NavLink>
             </Form>
         </>
     );

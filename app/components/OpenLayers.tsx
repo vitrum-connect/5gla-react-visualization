@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 
 import {Feature, Map, View} from 'ol';
 import {Coordinate} from 'ol/coordinate';
-import {Extent} from "ol/extent";
+import {Extent} from 'ol/extent';
 import {Point, Polygon} from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from "ol/layer/Vector";
@@ -10,6 +10,7 @@ import {fromLonLat} from 'ol/proj';
 import {OSM} from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import {Fill, Stroke, Style} from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
 
 import 'ol/ol.css';
 import styles from './OpenLayers.module.css';
@@ -36,7 +37,9 @@ function createPointVectorLayer(name: string, source: VectorSource<Feature<Point
 interface Props {
     id: string,
     agriCrops: AgriCrop[],
+    selectedAgriCrop?: AgriCrop|undefined,
     selectedGroup: TenantGroup|undefined,
+    selectedSensor?: Sensor|undefined,
     sensors: Sensor[]
 }
 
@@ -52,7 +55,7 @@ function fitMap(mapView: View | undefined, extent: Extent | undefined) {
     }
 }
 
-function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
+function OpenLayers({ agriCrops, id, selectedAgriCrop, selectedGroup, selectedSensor, sensors }: Props) {
 
     const mapRef = useRef<Map | undefined>(undefined);
 
@@ -70,7 +73,7 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
     let pointVectorLayer = createPointVectorLayer(pointVectorLayerName, pointVectorSource);
     let polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
 
-    const style = new Style({
+    const normalPolygonStyle = new Style({
         fill: new Fill({
             color: 'rgba(0, 128, 255, 0.4)',
         }),
@@ -78,6 +81,29 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             color: 'blue',
             width: 2,
         }),
+    });
+
+    const highlightPolygonStyle = new Style({
+        fill: new Fill({
+            color: 'rgba(255, 0, 0, 0.4)',
+        }),
+        stroke: new Stroke({
+            color: 'red',
+            width: 2,
+        }),
+    });
+
+    const highlightPointStyle = new Style({
+        image: new CircleStyle({
+            fill: new Fill({
+                color: 'rgba(255, 0, 0, 0.4)'
+            }),
+            stroke: new Stroke({
+                color: 'red',
+                width: 1
+            }),
+            radius: 5
+        })
     });
 
     function updateAgriCrops () {
@@ -93,7 +119,7 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
                 lonLatCoordinates.push(fromLonLat(coordinate));
             });
             const polygonFeature = new Feature({ geometry: new Polygon([lonLatCoordinates]) });
-            polygonFeature.setStyle(style);
+            polygonFeature.setStyle(agriCrop.id === selectedAgriCrop?.id ? highlightPolygonStyle : normalPolygonStyle);
             features.push(polygonFeature);
         });
         polygonVectorSource.clear();
@@ -105,7 +131,9 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         }
         polygonVectorLayer = createPolygonVectorLayer(polygonVectorLayerName, polygonVectorSource);
         map.addLayer(polygonVectorLayer);
-        fitMap(map.getView(), polygonVectorSource.getExtent());
+        if (!selectedAgriCrop && !selectedSensor) {
+            fitMap(map.getView(), polygonVectorSource.getExtent());
+        }
     }
 
     function updateSensors() {
@@ -116,7 +144,11 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
             return !selectedGroup || sensor.customGroup === selectedGroup.groupId;
         });
         _sensors.forEach((sensor: Sensor) => {
-            features.push(new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) }));
+            const pointFeature = new Feature({ geometry: new Point(fromLonLat(sensor.coordinates)) });
+            if (sensor.id === selectedSensor?.id) {
+                pointFeature.setStyle(highlightPointStyle);
+            }
+            features.push(pointFeature);
         });
         pointVectorSource.clear();
         pointVectorSource.addFeatures(features);
@@ -148,13 +180,13 @@ function OpenLayers({ agriCrops, id, selectedGroup, sensors }: Props) {
         if (mapRef.current && agriCrops.length > 0) {
             updateAgriCrops();
         }
-    }, [agriCrops, selectedGroup]);
+    }, [agriCrops, selectedGroup, selectedAgriCrop]);
 
     useEffect(() => {
         if (mapRef.current && sensors.length > 0) {
             updateSensors();
         }
-    }, [sensors, selectedGroup]);
+    }, [sensors, selectedGroup, selectedSensor]);
 
     return <div id={id} className={styles.map}></div>;
 }
